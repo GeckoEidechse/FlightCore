@@ -154,14 +154,16 @@ pub fn get_northstar_version_number(game_install: GameInstall) -> Result<String,
 #[tauri::command]
 pub fn launch_northstar(
     game_install: GameInstall,
+    launch_args: Vec<&str>,
     launch_via_steam: Option<bool>,
     bypass_checks: Option<bool>,
 ) -> Result<String, String> {
     dbg!(game_install.clone());
+    println!("Launch arguments: {:?}", launch_args);
 
     let launch_via_steam = launch_via_steam.unwrap_or(false);
     if launch_via_steam {
-        return launch_northstar_steam(game_install, bypass_checks);
+        return launch_northstar_steam(game_install, launch_args, bypass_checks);
     }
 
     let host_os = get_host_os();
@@ -176,7 +178,7 @@ pub fn launch_northstar(
             ));
         }
 
-        return launch_northstar_steam(game_install, bypass_checks);
+        return launch_northstar_steam(game_install, launch_args, bypass_checks);
     }
 
     let bypass_checks = bypass_checks.unwrap_or(false);
@@ -212,9 +214,11 @@ pub fn launch_northstar(
     {
         let ns_exe_path = format!("{}/NorthstarLauncher.exe", game_install.game_path);
         let ns_profile_arg = format!("-profile={}", game_install.profile);
+        let mut arguments = vec!["/C", "start", "", &ns_exe_path, &ns_profile_arg];
+        arguments.extend(launch_args);
 
         let _output = std::process::Command::new("C:\\Windows\\System32\\cmd.exe")
-            .args(["/C", "start", "", &ns_exe_path, &ns_profile_arg])
+            .args(arguments)
             .spawn()
             .expect("failed to execute process");
         return Ok("Launched game".to_string());
@@ -230,6 +234,7 @@ pub fn launch_northstar(
 /// Prepare Northstar and Launch through Steam using the Browser Protocol
 pub fn launch_northstar_steam(
     game_install: GameInstall,
+    launch_args: Vec<&str>,
     _bypass_checks: Option<bool>,
 ) -> Result<String, String> {
     if !matches!(game_install.install_type, InstallType::STEAM) {
@@ -262,8 +267,10 @@ pub fn launch_northstar_steam(
     }
 
     match open::that(format!(
-        "steam://run/{}//-profile={} --northstar/",
-        TITANFALL2_STEAM_ID, game_install.profile
+        "steam://run/{}//-profile={} --northstar/ {}",
+        TITANFALL2_STEAM_ID,
+        game_install.profile,
+        launch_args.join(" ")
     )) {
         Ok(()) => Ok("Started game".to_string()),
         Err(_err) => Err("Failed to launch Titanfall 2 via Steam".to_string()),

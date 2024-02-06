@@ -144,6 +144,23 @@
                 "reinstall_text": "Please wait",
                 "reinstall_success": "Successfully reinstalled Northstar"
             }
+        },
+
+        "launch_args": {
+            "title": "Launch arguments",
+            "new_arg_btn": "+ New launch argument",
+            "select_game_language": "Select game language",
+            "descriptions": {
+                "disablelogs": "Disable logging and creation of log files",
+                "vanilla": "Disables Northstar loading",
+                "northstar": "Enables Northstar loading",
+                "dedicated": "Starts a dedicated server without video output",
+                "waitfordebugger": "Waits for debugger to connect before launching game",
+                "enablechathooks": "Enables the use of chathooks for use by mods",
+                "noplugins": "Disables the plugin system",
+                "novid": "Disables startup videos",
+                "nosound": "Disables all game sounds"
+            }
         }
     },
 

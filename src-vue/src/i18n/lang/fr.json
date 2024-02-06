@@ -128,6 +128,22 @@
                 "delete": "Supprimer",
                 "delete_confirm": "Voulez-vous vraiment supprimer ce profil ?"
             }
+        },
+
+        "launch_args": {
+            "title": "Paramètres de démarrage",
+            "new_arg_btn": "+ Nouveau paramètre",
+            "descriptions": {
+                "disablelogs": "Désactive la journalisation et la création de journaux",
+                "vanilla": "Désactive le chargement de Northstar",
+                "northstar": "Active le chargement de Northstar",
+                "dedicated": "Démarre un serveur dédié sans sortie graphique",
+                "waitfordebugger": "Attend la connexion au débuggueur avant de lancer le jeu",
+                "enablechathooks": "Active les chathooks pour les mods",
+                "noplugins": "Désactive le système de plugins",
+                "novid": "Désactive les vidéos au démarrage",
+                "nosound": "Désactive tous les sons du jeu"
+            }
         }
     },
     "notification": {

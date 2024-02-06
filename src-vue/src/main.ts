@@ -64,5 +64,7 @@ export const router = createRouter({
 });
 app.use(router);
 
+// Store keys
+export const argumentsStoreKey = 'launch_arguments';
 
 app.mount('#app')

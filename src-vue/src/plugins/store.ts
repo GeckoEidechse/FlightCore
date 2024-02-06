@@ -11,7 +11,7 @@ import { NorthstarState } from '../utils/NorthstarState';
 import { appDir } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
 import { Store } from 'tauri-plugin-store-api';
-import { router } from "../main";
+import {argumentsStoreKey, router} from "../main";
 import { ReleaseInfo } from "../../../src-tauri/bindings/ReleaseInfo";
 import { ThunderstoreMod } from "../../../src-tauri/bindings/ThunderstoreMod";
 import { NorthstarMod } from "../../../src-tauri/bindings/NorthstarMod";
@@ -173,8 +173,11 @@ export const store = createStore<FlightCoreStore>({
             }
         },
         async launchGame(state: any, no_checks = false) {
+            // Launch arguments
+            const fileArgs: string[] = await persistentStore.get(argumentsStoreKey) ?? [];
+
             if (no_checks) {
-                await invoke("launch_northstar", { gameInstall: state.game_install, bypassChecks: no_checks })
+                await invoke("launch_northstar", { gameInstall: state.game_install, launchArgs: fileArgs, bypassChecks: no_checks })
                     .then((message) => {
                         console.log("Launched with bypassed checks");
                         console.log(message);
@@ -224,7 +227,7 @@ export const store = createStore<FlightCoreStore>({
 
                 // Game is ready to play.
                 case NorthstarState.READY_TO_PLAY:
-                    await invoke("launch_northstar", { gameInstall: state.game_install })
+                    await invoke("launch_northstar", { gameInstall: state.game_install, launchArgs: fileArgs })
                         .then((message) => {
                             console.log(message);
                             // NorthstarState.RUNNING
@@ -241,7 +244,10 @@ export const store = createStore<FlightCoreStore>({
             }
         },
         async launchGameSteam(state: any, no_checks = false) {
-            await invoke("launch_northstar", { gameInstall: state.game_install, launchViaSteam: true, bypassChecks: no_checks })
+            // Launch arguments
+            const fileArgs: string[] = await persistentStore.get(argumentsStoreKey) ?? [];
+
+            await invoke("launch_northstar", { gameInstall: state.game_install, launchArgs: fileArgs, launchViaSteam: true, bypassChecks: no_checks })
                 .then((message) => {
                     showNotification('Success');
                 })
