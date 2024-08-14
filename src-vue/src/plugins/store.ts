@@ -9,7 +9,7 @@ import { FlightCoreVersion } from "../../../src-tauri/bindings/FlightCoreVersion
 import { NotificationHandle } from 'element-plus';
 import { NorthstarState } from '../utils/NorthstarState';
 import { appDir } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import { Store } from 'tauri-plugin-store-api';
 import { router } from "../main";
 import { ReleaseInfo } from "../../../src-tauri/bindings/ReleaseInfo";

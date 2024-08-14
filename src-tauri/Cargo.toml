@@ -18,12 +18,12 @@ rust-version = "1.66"
 debug = 1
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2.0.0-rc", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.6", features = ["api-all", "dialog", "updater"] }
+tauri = { version = "2.0.0-rc", features = [] }
 tokio = { version = "1", features = ["full"] }
 # Sentry (crash) logging
 sentry = "0.32"
@@ -43,7 +43,7 @@ sysinfo = "0.30.12"
 # HTTP requests
 reqwest = { version = "0.11", features = ["blocking"] }
 # Persistent store for settings
-tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 # JSON5 parsing support (allows comments in JSON)
 json5 = "0.4.1"
 # Async recursion for recursive mod install

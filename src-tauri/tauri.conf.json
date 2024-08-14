@@ -3,61 +3,56 @@
   "build": {
     "beforeBuildCommand": "cd src-vue && npm run build",
     "beforeDevCommand": "cd src-vue && npm run dev",
-    "devPath": "http://localhost:5173/",
-    "distDir": "../src-vue/dist"
+    "frontendDist": "../src-vue/dist",
+    "devUrl": "http://localhost:5173/"
   },
-  "package": {
-    "productName": "FlightCore",
-    "version": "2.24.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": "all",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.github.r2northstartools.flightcore",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
     },
-    "security": {
-      "csp": null
-    },
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "productName": "FlightCore",
+  "version": "2.24.0",
+  "identifier": "com.github.r2northstartools.flightcore",
+  "plugins": {
     "updater": {
-      "active": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVBNjM3NzJGRDgxMTU4NUUKUldSZVdCSFlMM2RqNmdhK3pIZjhEYWg2WnZGSFJqdkhLSHNOSjNhaW5VQVFLaHV3YWFDTnFKWWQK",
       "endpoints": [
         "https://github.com/R2NorthstarTools/FlightCore/releases/latest/download/latest-release.json"
       ],
-      "dialog": true
-    },
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVBNjM3NzJGRDgxMTU4NUUKUldSZVdCSFlMM2RqNmdhK3pIZjhEYWg2WnZGSFJqdkhLSHNOSjNhaW5VQVFLaHV3YWFDTnFKWWQK"
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
@@ -69,6 +64,9 @@
         "width": 1010,
         "minWidth": 600
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }
