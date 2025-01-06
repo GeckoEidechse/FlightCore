@@ -1,74 +1,36 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2",
   "build": {
     "beforeBuildCommand": "cd src-vue && npm run build",
     "beforeDevCommand": "cd src-vue && npm run dev",
-    "devPath": "http://localhost:5173/",
-    "distDir": "../src-vue/dist"
+    "devUrl": "http://localhost:1420/",
+    "frontendDist": "../src-vue/dist"
   },
-  "package": {
-    "productName": "FlightCore",
-    "version": "2.26.2"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.github.r2northstartools.flightcore",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVBNjM3NzJGRDgxMTU4NUUKUldSZVdCSFlMM2RqNmdhK3pIZjhEYWg2WnZGSFJqdkhLSHNOSjNhaW5VQVFLaHV3YWFDTnFKWWQK",
-      "endpoints": [
-        "https://github.com/R2NorthstarTools/FlightCore/releases/latest/download/latest-release.json"
-      ],
-      "dialog": true
-    },
+  "productName": "FlightCore",
+  "version": "2.26.2",
+  "identifier": "com.github.r2northstartools.flightcore",
+  "app": {
     "windows": [
       {
-        "fullscreen": false,
-        "resizable": true,
-        "decorations": false,
         "title": "FlightCore",
-        "height": 600,
-        "minHeight": 300,
+        "decorations": false,
         "width": 1010,
-        "minWidth": 600
+        "height": 600
       }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
     ]
   }
 }

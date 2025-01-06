@@ -10,7 +10,7 @@ with open("src-tauri/tauri.conf.json", "rt") as f:
 with open("src-tauri/Cargo.toml", "rt") as f:
     Cargo_toml = toml.load(f)
 
-tauri_conf_json_version = tauri_conf_json["package"]["version"]
+tauri_conf_json_version = tauri_conf_json["version"]
 Cargo_toml_version = Cargo_toml["package"]["version"]
 
 # Ensure same

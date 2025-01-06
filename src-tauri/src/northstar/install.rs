@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use std::{cell::RefCell, time::Instant};
+use tauri::{AppHandle, Emitter};
 use ts_rs::TS;
 
 use crate::constants::{CORE_MODS, NORTHSTAR_DEFAULT_PROFILE, NORTHSTAR_DLL};
@@ -32,7 +33,7 @@ struct InstallProgress {
 /// Installs Northstar to the given path
 #[tauri::command]
 pub async fn install_northstar_wrapper(
-    window: tauri::Window,
+    app: AppHandle,
     game_install: GameInstall,
     northstar_package_name: Option<String>,
     version_number: Option<String>,
@@ -50,7 +51,7 @@ pub async fn install_northstar_wrapper(
         })
         .unwrap_or("Northstar".to_string());
 
-    match install_northstar(window, game_install, northstar_package_name, version_number).await {
+    match install_northstar(app, game_install, northstar_package_name, version_number).await {
         Ok(_) => Ok(true),
         Err(err) => {
             log::error!("{}", err);
@@ -62,14 +63,14 @@ pub async fn install_northstar_wrapper(
 /// Update Northstar install in the given path
 #[tauri::command]
 pub async fn update_northstar(
-    window: tauri::Window,
+    app: AppHandle,
     game_install: GameInstall,
     northstar_package_name: Option<String>,
 ) -> Result<bool, String> {
     log::info!("Updating Northstar");
 
     // Simply re-run install with up-to-date version for upate
-    install_northstar_wrapper(window, game_install, northstar_package_name, None).await
+    install_northstar_wrapper(app, game_install, northstar_package_name, None).await
 }
 
 /// Copied from `papa` source code and modified
@@ -77,7 +78,7 @@ pub async fn update_northstar(
 ///
 ///Checks cache, else downloads the latest version
 async fn do_install(
-    window: tauri::Window,
+    app: AppHandle,
     nmod: &thermite::model::ModVersion,
     game_install: GameInstall,
 ) -> Result<()> {
@@ -109,32 +110,30 @@ async fn do_install(
                 // This way we don't bombard the frontend with events on fast download speeds
                 let time_since_last_emit = Instant::now().duration_since(*last_emit.borrow());
                 if time_since_last_emit >= Duration::from_millis(100) {
-                    window
-                        .emit(
-                            "northstar-install-download-progress",
-                            InstallProgress {
-                                current_downloaded: current,
-                                total_size: total,
-                                state: InstallState::Downloading,
-                            },
-                        )
-                        .unwrap();
+                    app.emit(
+                        "northstar-install-download-progress",
+                        InstallProgress {
+                            current_downloaded: current,
+                            total_size: total,
+                            state: InstallState::Downloading,
+                        },
+                    )
+                    .unwrap();
                     *last_emit.borrow_mut() = Instant::now();
                 }
             }
         },
     )?;
 
-    window
-        .emit(
-            "northstar-install-download-progress",
-            InstallProgress {
-                current_downloaded: 0,
-                total_size: 0,
-                state: InstallState::Extracting,
-            },
-        )
-        .unwrap();
+    app.emit(
+        "northstar-install-download-progress",
+        InstallProgress {
+            current_downloaded: 0,
+            total_size: 0,
+            state: InstallState::Extracting,
+        },
+    )
+    .unwrap();
 
     log::info!("Extracting Northstar...");
     extract(nfile, std::path::Path::new(&extract_directory))?;
@@ -229,22 +228,21 @@ async fn do_install(
     std::fs::remove_dir_all(temp_dir).unwrap();
 
     log::info!("Done installing Northstar!");
-    window
-        .emit(
-            "northstar-install-download-progress",
-            InstallProgress {
-                current_downloaded: 0,
-                total_size: 0,
-                state: InstallState::Done,
-            },
-        )
-        .unwrap();
+    app.emit(
+        "northstar-install-download-progress",
+        InstallProgress {
+            current_downloaded: 0,
+            total_size: 0,
+            state: InstallState::Done,
+        },
+    )
+    .unwrap();
 
     Ok(())
 }
 
 pub async fn install_northstar(
-    window: tauri::Window,
+    app: AppHandle,
     game_install: GameInstall,
     northstar_package_name: String,
     version_number: Option<String>,
@@ -268,7 +266,7 @@ pub async fn install_northstar(
     let game_path = game_install.game_path.clone();
     log::info!("Install path \"{}\"", game_path);
 
-    match do_install(window, nmod.versions.get(version).unwrap(), game_install).await {
+    match do_install(app, nmod.versions.get(version).unwrap(), game_install).await {
         Ok(_) => (),
         Err(err) => {
             if game_path

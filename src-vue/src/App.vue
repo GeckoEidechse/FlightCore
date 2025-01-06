@@ -4,10 +4,10 @@ import DeveloperView from './views/DeveloperView.vue';
 import PlayView from './views/PlayView.vue';
 import ModsView from './views/ModsView.vue';
 import SettingsView from './views/SettingsView.vue';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { store } from './plugins/store';
-import { Store } from 'tauri-plugin-store-api';
-import { invoke } from "@tauri-apps/api";
+import { load } from '@tauri-apps/plugin-store';
+import { invoke } from "@tauri-apps/api/core";
 import NotificationButton from "./components/NotificationButton.vue";
 
 export default {
@@ -26,9 +26,9 @@ export default {
     store.commit('initialize');
 
     // Initialize interface language
-    const persistentStore = new Store('flight-core-settings.json');
-    let lang: string | null = await persistentStore.get('lang');
-    if (lang === null) {
+    const persistentStore = await load('flight-core-settings.json', { autoSave: false });
+    let lang: string | null | undefined = await persistentStore.get('lang');
+    if (lang === null || lang == undefined) {
       lang = navigator.language.substring(0, 2);
       persistentStore.set('lang', lang);
       await persistentStore.save();
@@ -36,8 +36,8 @@ export default {
     this.$root!.$i18n.locale = lang;
   },
   methods: {
-    minimize() {
-      appWindow.minimize()
+    async minimize() {
+      await getCurrentWindow().minimize();
     },
     close() {
       invoke("close_application");

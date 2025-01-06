@@ -1,16 +1,15 @@
 import { createStore } from 'vuex';
 import { listen, Event as TauriEvent } from "@tauri-apps/api/event";
 import { Tabs } from "../utils/Tabs";
-import { InstallType } from "../../../src-tauri/bindings/InstallType";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { GameInstall } from "../utils/GameInstall";
 import { ReleaseCanal } from "../utils/ReleaseCanal";
 import { FlightCoreVersion } from "../../../src-tauri/bindings/FlightCoreVersion";
 import { NotificationHandle } from 'element-plus';
 import { NorthstarState } from '../utils/NorthstarState';
-import { appDir } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/dialog';
-import { Store } from 'tauri-plugin-store-api';
+import { appDataDir } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/plugin-dialog';
+import { load } from '@tauri-apps/plugin-store';
 import { router } from "../main";
 import { ReleaseInfo } from "../../../src-tauri/bindings/ReleaseInfo";
 import { ThunderstoreMod } from "../../../src-tauri/bindings/ThunderstoreMod";
@@ -22,7 +21,7 @@ import { pullRequestModule } from './modules/pull_requests';
 import { showErrorNotification, showNotification } from '../utils/ui';
 import { notificationsModule } from './modules/notifications';
 
-const persistentStore = new Store('flight-core-settings.json');
+const persistentStore = await load('flight-core-settings.json', { autoSave: false });
 
 
 export interface FlightCoreStore {
@@ -90,16 +89,16 @@ export const store = createStore<FlightCoreStore>({
         }
     },
     mutations: {
-        checkNorthstarUpdates(state) {
+        checkNorthstarUpdates(state: FlightCoreStore) {
             _get_northstar_version_number(state);
         },
-        async toggleDebugMode(_state) {
+        async toggleDebugMode(_state: FlightCoreStore) {
             let menu_bar_handle = document.querySelector('#fc_menu-bar');
             if (menu_bar_handle !== null) {
                 menu_bar_handle.classList.toggle('developer_build');
             }
         },
-        async toggleDeveloperMode(state) {
+        async toggleDeveloperMode(state: FlightCoreStore) {
             state.developer_mode = !state.developer_mode;
 
             // Reset tab when closing dev mode.
@@ -111,12 +110,12 @@ export const store = createStore<FlightCoreStore>({
             await persistentStore.set('dev_mode', state.developer_mode);
             await persistentStore.save();
         },
-        initialize(state) {
+        initialize(state: any) {
             _initializeApp(state);
             _checkForFlightCoreUpdates(state);
             _initializeListeners(state);
         },
-        updateCurrentTab(state: any, newTab: Tabs) {
+        updateCurrentTab(_state: any, newTab: Tabs) {
             router.push({ path: newTab });
         },
         async updateGamePath(state: FlightCoreStore) {
@@ -124,7 +123,7 @@ export const store = createStore<FlightCoreStore>({
             const selected = await open({
                 directory: true,
                 multiple: false,
-                defaultPath: await appDir(),
+                defaultPath: await appDataDir(),
             });
             if (Array.isArray(selected)) {
                 // user selected multiple directories
@@ -244,7 +243,7 @@ export const store = createStore<FlightCoreStore>({
         },
         async launchGameSteam(state: any, launch_options: NorthstarLaunchOptions = { launch_via_steam: true, bypass_checks: false}) {
             await invoke("launch_northstar", { gameInstall: state.game_install, launchOptions: launch_options })
-                .then((message) => {
+                .then(() => {
                     showNotification('Success');
                 })
                 .catch((error) => {
@@ -386,13 +385,13 @@ async function _initializeApp(state: any) {
     }
 
     // Grab "Enable releases switching" setting from store if possible
-    const valueFromStore: { value: boolean } | null = await persistentStore.get('northstar-releases-switching');
+    const valueFromStore: { value: boolean } | null | undefined = await persistentStore.get('northstar-releases-switching');
     if (valueFromStore) {
         state.enableReleasesSwitch = valueFromStore.value;
     }
 
     // Grab "Thunderstore mods per page" setting from store if possible
-    const perPageFromStore: { value: number } | null = await persistentStore.get('thunderstore-mods-per-page');
+    const perPageFromStore: { value: number } | null | undefined = await persistentStore.get('thunderstore-mods-per-page');
     if (perPageFromStore && perPageFromStore.value) {
         state.mods_per_page = perPageFromStore.value;
     }
@@ -523,7 +522,7 @@ async function _get_northstar_version_number(state: any) {
                     alert(error);
                 });
         })
-        .catch((error) => {
+        .catch((_error) => {
             state.northstar_state = NorthstarState.INSTALL;
         })
 }

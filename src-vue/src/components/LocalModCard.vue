@@ -36,7 +36,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { NorthstarMod } from "../../../src-tauri/bindings/NorthstarMod";
 import { showErrorNotification, showNotification } from "../utils/ui";
 
@@ -78,7 +78,7 @@ export default defineComponent({
         },
         async deleteMod(mod: NorthstarMod) {
             await invoke("delete_northstar_mod", { gameInstall: this.$store.state.game_install, nsmodName: mod.name })
-                .then((message) => {
+                .then(() => {
                     // Just a visual indicator that it worked
                     showNotification(this.$t('mods.local.success_deleting', { modName: mod.name }));
                 })

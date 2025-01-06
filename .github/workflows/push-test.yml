@@ -49,7 +49,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
       - name: Create dist folder (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: mkdir --parent src-vue/dist
@@ -70,7 +70,7 @@ jobs:
       - name: install dependencies (ubuntu only)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Move original TypeScript bindings
         run: |
@@ -112,13 +112,13 @@ jobs:
       if: matrix.platform == 'ubuntu-22.04'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
-    - name: Disable self-updater
-      shell: bash
-      run: |
-        jq '.tauri.updater.active = false' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.new
-        rm src-tauri/tauri.conf.json
-        mv src-tauri/tauri.conf.json.new src-tauri/tauri.conf.json
+        sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+    # - name: Disable self-updater
+    #   shell: bash
+    #   run: |
+    #     jq '.tauri.updater.active = false' src-tauri/tauri.conf.json > src-tauri/tauri.conf.json.new
+    #     rm src-tauri/tauri.conf.json
+    #     mv src-tauri/tauri.conf.json.new src-tauri/tauri.conf.json
     - uses: Swatinem/rust-cache@v2 # Cache Rust build artifacts
       with:
         workspaces: |

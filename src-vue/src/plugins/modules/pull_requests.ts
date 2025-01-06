@@ -1,4 +1,4 @@
-import { invoke, shell } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { PullsApiResponseElement } from "../../../../src-tauri/bindings/PullsApiResponseElement";
 import { PullRequestType } from '../../../../src-tauri/bindings/PullRequestType';
 import { store } from "../store";
@@ -36,7 +36,7 @@ export const pullRequestModule = {
                     showErrorNotification(error);
                 });
         },
-        async downloadLauncherPR(state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
+        async downloadLauncherPR(_state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
             await invoke<string>("get_launcher_download_link", { commitSha: pull_request.head.sha })
                 .then((url) => {
                     // Open URL in default HTTPS handler (i.e. default browser)
@@ -46,11 +46,11 @@ export const pullRequestModule = {
                     showErrorNotification(error);
                 });
         },
-        async downloadModsPR(state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
+        async downloadModsPR(_state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
             let url = `https://github.com/${pull_request.head.repo.full_name}/archive/refs/heads/${pull_request.head.ref}.zip`
             shell.open(url);
         },
-        async installLauncherPR(state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
+        async installLauncherPR(_state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
             // Send notification telling the user to wait for the process to finish
             const notification = showNotification(`Installing launcher PR ${pull_request.number}`, 'Please wait', 'info', 0);
 
@@ -68,12 +68,12 @@ export const pullRequestModule = {
                     notification.close();
                 });
         },
-        async installModsPR(state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
+        async installModsPR(_state: PullRequestStoreState, pull_request: PullsApiResponseElement) {
             // Send notification telling the user to wait for the process to finish
             const notification = showNotification(`Installing mods PR ${pull_request.number}`, 'Please wait', 'info', 0);
 
             await invoke("apply_mods_pr", { pullRequest: pull_request, gameInstall: store.state.game_install })
-                .then((message) => {
+                .then(() => {
                     // Show user notification if mod install completed.
                     showNotification(
                         `Done`,

@@ -147,13 +147,12 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { NorthstarLaunchOptions } from "../../../src-tauri/bindings/NorthstarLaunchOptions";
 import { TagWrapper } from "../../../src-tauri/bindings/TagWrapper";
 import { NorthstarThunderstoreReleaseWrapper } from "../../../src-tauri/bindings/NorthstarThunderstoreReleaseWrapper";
 import PullRequestsSelector from "../components/PullRequestsSelector.vue";
 import { showErrorNotification, showNotification } from "../utils/ui";
-import { Project } from "../../../src-tauri/bindings/Project"
 
 export default defineComponent({
     name: "DeveloperView",
@@ -303,7 +302,7 @@ export default defineComponent({
             let install_northstar_result = invoke("install_northstar_wrapper", { gameInstall: this.$store.state.game_install, northstarPackageName: this.selected_ns_version.value.package, versionNumber: this.selected_ns_version.value.version });
 
             await install_northstar_result
-                .then((message) => {
+                .then(() => {
                     // Send notification
                     showNotification(this.$t('generic.done'), this.$t('settings.repair.window.reinstall_success'));
                     this.$store.commit('checkNorthstarUpdates');
@@ -320,12 +319,12 @@ export default defineComponent({
         async installNSProton() {
             showNotification(`Started NSProton install`);
             await invoke("install_northstar_proton_wrapper")
-                .then((message) => { showNotification(`Done`); })
+                .then(() => { showNotification(`Done`); })
                 .catch((error) => { showNotification(`Error`, error, "error"); })
         },
         async uninstallNSProton() {
             await invoke("uninstall_northstar_proton_wrapper")
-                .then((message) => { showNotification(`Done`); })
+                .then(() => { showNotification(`Done`); })
                 .catch((error) => { showNotification(`Error`, error, "error"); })
         },
         async getLocalNSProtonVersion() {

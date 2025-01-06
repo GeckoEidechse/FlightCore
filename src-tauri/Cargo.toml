@@ -5,7 +5,6 @@ description = "Mod-manager for Northstar"
 authors = ["https://github.com/R2NorthstarTools/FlightCore/graphs/contributors"]
 license = "MIT"
 repository = "https://github.com/R2NorthstarTools/FlightCore"
-default-run = "flightcore"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -16,13 +15,22 @@ edition = "2021"
 # This is done to see line numbers in stack trace on sentry.io
 debug = 1
 
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "tauri_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.6", features = ["api-all", "dialog", "updater"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
 tokio = { version = "1", features = ["full"] }
 # Sentry (crash) logging
 sentry = "0.32"
@@ -40,9 +48,7 @@ regex = "1.10"
 # Read out running application process names
 sysinfo = "0.30.13"
 # HTTP requests
-reqwest = { version = "0.11", features = ["blocking"] }
-# Persistent store for settings
-tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+reqwest = { version = "0.11", features = ["blocking", "json"] }
 # JSON5 parsing support (allows comments in JSON)
 json5 = "0.4.1"
 # Async recursion for recursive mod install
@@ -71,17 +77,10 @@ rand = "0.8.5"
 octocrab = "0.38.0"
 # Library for removing markdown links
 remove-markdown-links = "1.0.0"
+tauri-plugin-store = "2"
 
 
 [target.'cfg(windows)'.dependencies]
 # Windows API stuff
 winapi = "0.3.9"
 winreg = "0.52.0"
-
-[features]
-# by default Tauri runs in production mode
-# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = ["custom-protocol"]
-# this feature is used used for production builds where `devPath` points to the filesystem
-# DO NOT remove this
-custom-protocol = ["tauri/custom-protocol"]

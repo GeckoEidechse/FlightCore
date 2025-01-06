@@ -46,10 +46,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent } from 'vue';
 import { ThunderstoreMod } from "../../../../src-tauri/bindings/ThunderstoreMod";
 import ThunderstoreModCard from "../../components/ThunderstoreModCard.vue";
-import { ElScrollbar, ScrollbarInstance } from "element-plus";
+import { ScrollbarInstance } from "element-plus";
 import { SortOptions } from "../../utils/SortOptions.d";
 import { ThunderstoreModVersion } from "../../../../src-tauri/bindings/ThunderstoreModVersion";
 import { fuzzy_filter } from "../../utils/filter";
@@ -193,7 +193,7 @@ export default defineComponent({
         onPaginationChange(index: number) {
             this.currentPageIndex = index - 1;
         },
-        scrollTop(index: number) {
+        scrollTop() {
             setTimeout(() => {
                 (this.$refs.scrollbar as ScrollbarInstance).scrollTo({ top: 0, behavior: 'smooth' });
             }, 100)

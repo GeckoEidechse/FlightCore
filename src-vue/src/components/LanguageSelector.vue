@@ -14,8 +14,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { Store } from 'tauri-plugin-store-api';
-const persistentStore = new Store('flight-core-settings.json');
+import { load } from '@tauri-apps/plugin-store';
+const persistentStore = await load('flight-core-settings.json', { autoSave: false });
 
 export default defineComponent({
     name: 'LanguageSelector',

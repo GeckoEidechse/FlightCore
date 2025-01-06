@@ -42,10 +42,10 @@ pub async fn get_flightcore_version_number() -> String {
 #[tauri::command]
 pub async fn open_repair_window(handle: tauri::AppHandle) -> Result<(), String> {
     // Spawn new window
-    let repair_window = match tauri::WindowBuilder::new(
+    let repair_window = match tauri::WebviewWindowBuilder::new(
         &handle,
         "RepairWindow",
-        tauri::WindowUrl::App("/#/repair".into()),
+        tauri::WebviewUrl::App("/#/repair".into()),
     )
     .build()
     {

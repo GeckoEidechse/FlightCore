@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { NorthstarMod } from "../../../../src-tauri/bindings/NorthstarMod";
 import { fuzzy_filter } from "../../utils/filter";
 import { showErrorNotification, showNotification } from "../../utils/ui";
@@ -48,7 +48,7 @@ export default defineComponent({
     methods: {
         async disableAllModsButCore() {
             await invoke("disable_all_but_core", { gameInstall: this.$store.state.game_install })
-                .then((message) => {
+                .then(() => {
                     showNotification(this.$t('generic.success'), this.$t('settings.repair.window.disable_all_but_core_success'));
                     this.$store.commit('loadInstalledMods');
                 })
