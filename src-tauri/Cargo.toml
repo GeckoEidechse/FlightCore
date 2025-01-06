@@ -40,7 +40,7 @@ regex = "1.10"
 # Read out running application process names
 sysinfo = "0.30.13"
 # HTTP requests
-reqwest = { version = "0.11", features = ["blocking"] }
+reqwest = { version = "0.12", features = ["blocking"] }
 # Persistent store for settings
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 # JSON5 parsing support (allows comments in JSON)
