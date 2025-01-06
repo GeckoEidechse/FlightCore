@@ -175,15 +175,18 @@ pub fn check_ea_app_or_origin_running() -> bool {
     x
 }
 
-/// Checks if Northstar process is running
+/// Checks if Northstar process is running (ignores dedicated server)
 pub fn check_northstar_running() -> bool {
-    let s = sysinfo::System::new_all();
-    let x = s
-        .processes_by_name("NorthstarLauncher.exe")
-        .next()
-        .is_some()
-        || s.processes_by_name("Titanfall2.exe").next().is_some();
-    x
+    let mut s = sysinfo::System::new_all();
+    s.refresh_all();
+    for process in s.processes().values() {
+        if (process.name().ends_with("Titanfall2.exe") || process.name().ends_with("Northstar.exe"))
+            && !process.cmd().contains(&String::from("-dedicated"))
+        {
+            return true;
+        }
+    }
+    false
 }
 
 /// Copies a folder and all its contents to a new location
