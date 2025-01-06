@@ -243,18 +243,31 @@ async fn do_install(
     Ok(())
 }
 
+/// Attempt to get Thunderstore index with wait and retry on failure
+fn get_package_index_with_retry() -> Result<Vec<thermite::model::Mod>, String> {
+    let retry_times = 3; // Number of retry attempts
+    let wait_time = 1; // Number of seconds to wait before retrying
+    for _ in 0..retry_times {
+        match thermite::api::get_package_index() {
+            Ok(res) => return Ok(res.to_vec()),
+            Err(err) => {
+                log::warn!("Failed fetching package index due to: {}", err);
+                std::thread::sleep(std::time::Duration::from_secs(wait_time));
+            }
+        }
+    }
+    Err("Failed to connect to Thunderstore.".to_string())
+}
+
 pub async fn install_northstar(
     window: tauri::Window,
     game_install: GameInstall,
     northstar_package_name: String,
     version_number: Option<String>,
 ) -> Result<String, String> {
-    let index = match thermite::api::get_package_index() {
-        Ok(res) => res.to_vec(),
-        Err(err) => {
-            log::warn!("Failed fetching package index due to: {err}");
-            return Err("Failed to connect to Thunderstore.".to_string());
-        }
+    let index = match get_package_index_with_retry() {
+        Ok(res) => res,
+        Err(err) => return Err(err),
     };
     let nmod = index
         .iter()
