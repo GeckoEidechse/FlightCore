@@ -88,7 +88,7 @@ pub fn parse_installed_mods(
             }
         };
         // Get Thunderstore mod string if it exists
-        let thunderstore_mod_string = match parsed_mod_json.thunderstore_mod_string {
+        let mut thunderstore_mod_string = match parsed_mod_json.thunderstore_mod_string {
             // Attempt legacy method for getting Thunderstore string first
             Some(ts_mod_string) => Some(ts_mod_string),
             // Legacy method failed
@@ -99,6 +99,17 @@ pub fn parse_installed_mods(
         };
         // Get directory path
         let mod_directory = directory.to_str().unwrap().to_string();
+
+        // This is a stupid way to show a legacy installed mod as outdated by simply giving back a wrong version number
+        if thunderstore_mod_string.is_some() {
+            // Parse the string
+            let mut parsed_string: ParsedThunderstoreModString =
+                thunderstore_mod_string.clone().unwrap().parse().unwrap();
+            // Set version number to `0.0.0`
+            parsed_string.version = "0.0.0".to_string();
+            // And store new string back in original variable
+            thunderstore_mod_string = Some(parsed_string.to_string())
+        }
 
         let ns_mod = NorthstarMod {
             name: parsed_mod_json.name,
