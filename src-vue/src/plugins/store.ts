@@ -27,6 +27,8 @@ const persistentStore = new Store('flight-core-settings.json');
 
 export interface FlightCoreStore {
     developer_mode: boolean,
+    repair_view_visible: boolean,
+
     game_install: GameInstall,
 
     flightcore_version: string,
@@ -64,6 +66,8 @@ export const store = createStore<FlightCoreStore>({
     state(): FlightCoreStore {
         return {
             developer_mode: false,
+            repair_view_visible: false,
+
             game_install: {game_path: undefined, profile: undefined, install_type: "UNKNOWN"}  as unknown as GameInstall,
 
             available_profiles: [],

@@ -104,11 +104,11 @@
                     <language-selector/>
                 </div>
 
-                <!-- Repair window -->
+                <!-- Repair view -->
                 <div class="fc_parameter__panel">
                     <h3>{{ $t('settings.repair.title') }}</h3>
-                    <el-button type="primary" @click="openRepairWindow">
-                        {{ $t('settings.repair.open_window') }}
+                    <el-button type="primary" @click="openRepairView">
+                        {{ $t('settings.repair.open_view') }}
                     </el-button>
                 </div>
 
@@ -152,6 +152,7 @@ const persistentStore = new Store('flight-core-settings.json');
 import { open } from '@tauri-apps/api/shell';
 import { i18n } from '../main';
 import { ElMessageBox } from 'element-plus'
+import { Tabs } from "../utils/Tabs";
 
 export default defineComponent({
     name: "SettingsView",
@@ -241,12 +242,9 @@ export default defineComponent({
         async updateGamePath() {
             this.$store.commit('updateGamePath');
         },
-        async openRepairWindow() {
-            await invoke("open_repair_window")
-                .then((message) => { })
-                .catch((error) => {
-                    showErrorNotification(error);
-                });
+        async openRepairView() {
+            this.$store.state.repair_view_visible = true;
+            this.$store.commit('updateCurrentTab', Tabs.REPAIR);
         },
         async openGameInstallFolder() {
             // Verify the game path is actually set

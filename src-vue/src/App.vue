@@ -57,7 +57,7 @@ export default {
   <div class="app-inner">
     <div id="fc_bg__container" :style="bgStyle"/>
 
-    <nav id="fc_menu-bar" v-if="$route.path !== '/repair'"><!-- Hide menu bar in repair view -->
+    <nav id="fc_menu-bar">
       <!-- Navigation items -->
       <el-menu
         :default-active="$route.path"
@@ -70,6 +70,7 @@ export default {
         <el-menu-item index="/mods">{{ $t('menu.mods') }}</el-menu-item>
         <el-menu-item index="/changelog">{{ $t('menu.changelog') }}</el-menu-item>
         <el-menu-item index="/settings">{{ $t('menu.settings') }}</el-menu-item>
+        <el-menu-item index="/repair" v-if="$store.state.repair_view_visible">{{ $t('menu.repair') }}</el-menu-item>
         <el-menu-item index="/dev" v-if="$store.state.developer_mode">{{ $t('menu.dev') }}</el-menu-item>
       </el-menu>
 

@@ -4,6 +4,7 @@
         "changelog": "Changelog",
         "mods": "Mods",
         "settings": "Settings",
+        "repair": "Repair",
         "dev": "Dev"
     },
 
@@ -128,11 +129,10 @@
 
         "repair": {
             "title": "Repair",
-            "open_window": "Open repair window",
+            "open_view": "Open repair view",
 
             "window": {
-                "title": "FlightCore repair window",
-                "warning": "This window contains various functionality to repair common issues with Northstar and FlightCore.",
+                "warning": "This view contains various functionality to repair common issues with Northstar and FlightCore.",
                 "disable_all_but_core": "Disable all but core mods",
                 "disable_all_but_core_success": "Disabled all mods but core",
                 "disable_modsettings": "Disable ModSettings mod",
