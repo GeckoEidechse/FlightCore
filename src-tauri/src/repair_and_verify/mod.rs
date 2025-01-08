@@ -1,3 +1,4 @@
+use crate::constants::NORTHSTAR_MODS_MANIFEST_VERSION;
 use crate::mod_management::{get_enabled_mods, rebuild_enabled_mods_json, set_mod_enabled_status};
 /// Contains various functions to repair common issues and verifying installation
 use crate::{constants::CORE_MODS, GameInstall};
@@ -38,8 +39,23 @@ pub fn verify_game_files(game_install: GameInstall) -> Result<String, String> {
 /// Enables core mods if disabled
 #[tauri::command]
 pub fn disable_all_but_core(game_install: GameInstall) -> Result<(), String> {
-    // Rebuild `enabledmods.json` first to ensure all mods are added
-    rebuild_enabled_mods_json(&game_install)?;
+    // Try to fetch `enabledmods.json` a first time to try getting a manifest version
+    let manifest_version: i64 = match get_enabled_mods(&game_install) {
+        Ok(res) => match &res.as_object().unwrap().contains_key("Version") {
+            false => NORTHSTAR_MODS_MANIFEST_VERSION,
+            true => res
+                .as_object()
+                .unwrap()
+                .get("Version")
+                .unwrap()
+                .as_i64()
+                .unwrap(),
+        },
+        Err(_) => NORTHSTAR_MODS_MANIFEST_VERSION,
+    };
+
+    // Rebuild `enabledmods.json` to ensure all mods are added
+    rebuild_enabled_mods_json(&game_install, manifest_version)?;
 
     let current_mods = get_enabled_mods(&game_install)?;
 
@@ -47,10 +63,30 @@ pub fn disable_all_but_core(game_install: GameInstall) -> Result<(), String> {
     for (key, _value) in current_mods.as_object().unwrap() {
         if CORE_MODS.contains(&key.as_str()) {
             // This is a core mod, we do not want to disable it
-            set_mod_enabled_status(game_install.clone(), key.to_string(), true)?;
-        } else {
-            // Not a core mod
-            set_mod_enabled_status(game_install.clone(), key.to_string(), false)?;
+            set_mod_enabled_status(game_install.clone(), key.to_string(), "".to_string(), true)?;
+        }
+        // Not a core mod
+        else if key != "Version" {
+            // Disable all mod versions...
+            if _value.is_object() {
+                for version in _value.as_object().unwrap().keys() {
+                    set_mod_enabled_status(
+                        game_install.clone(),
+                        key.to_string(),
+                        version.clone(),
+                        false,
+                    )?;
+                }
+            }
+            // ...or simply the mod version listed
+            else {
+                set_mod_enabled_status(
+                    game_install.clone(),
+                    key.to_string(),
+                    _value.as_str().unwrap_or("").to_string(),
+                    false,
+                )?;
+            }
         }
     }
 

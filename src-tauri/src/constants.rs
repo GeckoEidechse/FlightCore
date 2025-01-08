@@ -58,3 +58,6 @@ pub const NORTHSTAR_DLL: &str = "Northstar.dll";
 
 /// Profile that Northstar defaults to and ships with
 pub const NORTHSTAR_DEFAULT_PROFILE: &str = "R2Northstar";
+
+/// enabledmods.json format
+pub const NORTHSTAR_MODS_MANIFEST_VERSION: i64 = 0;

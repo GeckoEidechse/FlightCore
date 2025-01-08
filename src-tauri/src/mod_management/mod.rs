@@ -1,6 +1,8 @@
 // This file contains various mod management functions
 
-use crate::constants::{BLACKLISTED_MODS, CORE_MODS, MODS_WITH_SPECIAL_REQUIREMENTS};
+use crate::constants::{
+    BLACKLISTED_MODS, CORE_MODS, MODS_WITH_SPECIAL_REQUIREMENTS, NORTHSTAR_MODS_MANIFEST_VERSION,
+};
 use async_recursion::async_recursion;
 use thermite::prelude::ThermiteError;
 
@@ -143,7 +145,10 @@ pub fn get_enabled_mods(game_install: &GameInstall) -> Result<serde_json::value:
 }
 
 /// Gets all currently installed and enabled/disabled mods to rebuild `enabledmods.json`
-pub fn rebuild_enabled_mods_json(game_install: &GameInstall) -> Result<(), String> {
+pub fn rebuild_enabled_mods_json(
+    game_install: &GameInstall,
+    mut manifest_version: i64,
+) -> Result<(), String> {
     let enabledmods_json_path = format!(
         "{}/{}/enabledmods.json",
         game_install.game_path, game_install.profile
@@ -153,12 +158,44 @@ pub fn rebuild_enabled_mods_json(game_install: &GameInstall) -> Result<(), Strin
     // Create new mapping
     let mut my_map = serde_json::Map::new();
 
-    // Build mapping
-    for ns_mod in mods_and_properties.into_iter() {
-        my_map.insert(ns_mod.name, serde_json::Value::Bool(ns_mod.enabled));
+    // Assign manifest version
+    if manifest_version < 0 {
+        manifest_version = NORTHSTAR_MODS_MANIFEST_VERSION;
+    }
+    my_map.insert("Version".to_string(), serde_json::json!(manifest_version));
+
+    // Build mapping (adapting to manifest version)
+    match manifest_version {
+        0 => {
+            for ns_mod in mods_and_properties.into_iter() {
+                my_map.insert(ns_mod.name, serde_json::Value::Bool(ns_mod.enabled));
+            }
+        }
+        1 => {
+            for ns_mod in mods_and_properties.into_iter() {
+                // Create mod key if needed
+                if !my_map.contains_key(&ns_mod.name) {
+                    let mut versions_map = serde_json::Map::new();
+                    versions_map.insert(
+                        ns_mod.version.unwrap(),
+                        serde_json::Value::Bool(ns_mod.enabled),
+                    );
+                    my_map.insert(ns_mod.name, serde_json::Value::Object(versions_map));
+                }
+                // Else create version key
+                else {
+                    let mut version_map = my_map[&ns_mod.name].as_object().unwrap().clone();
+                    version_map.insert(
+                        ns_mod.version.unwrap(),
+                        serde_json::Value::Bool(ns_mod.enabled),
+                    );
+                    my_map.insert(ns_mod.name, serde_json::Value::Object(version_map));
+                }
+            }
+        }
+        _ => return Err("Unknown manifest version.".to_string()),
     }
 
-    // Turn into serde object
     let obj = serde_json::Value::Object(my_map);
 
     // Write to file
@@ -176,6 +213,7 @@ pub fn rebuild_enabled_mods_json(game_install: &GameInstall) -> Result<(), Strin
 pub fn set_mod_enabled_status(
     game_install: GameInstall,
     mod_name: String,
+    mut mod_version: String,
     is_enabled: bool,
 ) -> Result<(), String> {
     let enabledmods_json_path = format!(
@@ -190,7 +228,7 @@ pub fn set_mod_enabled_status(
             log::warn!("Couldn't parse `enabledmod.json`: {}", err);
             log::warn!("Rebuilding file.");
 
-            rebuild_enabled_mods_json(&game_install)?;
+            rebuild_enabled_mods_json(&game_install, -1)?;
 
             // Then try again
             get_enabled_mods(&game_install)?
@@ -201,14 +239,74 @@ pub fn set_mod_enabled_status(
     if res.get(mod_name.clone()).is_none() {
         // If it doesn't exist, rebuild `enabledmod.json`
         log::info!("Value not found in `enabledmod.json`. Rebuilding file");
-        rebuild_enabled_mods_json(&game_install)?;
+
+        let manifest_version =
+            match res.get("Version").is_some() && res.get("Version").unwrap().is_i64() {
+                true => res.get("Version").unwrap().as_i64().unwrap(),
+                false => NORTHSTAR_MODS_MANIFEST_VERSION,
+            };
+
+        rebuild_enabled_mods_json(&game_install, manifest_version)?;
 
         // Then try again
         res = get_enabled_mods(&game_install)?;
     }
 
+    // Get manifest format version
+    let mut manifest_version = NORTHSTAR_MODS_MANIFEST_VERSION;
+    let manifest_object = &res.as_object().unwrap();
+
+    if manifest_object.contains_key("Version") && manifest_object["Version"].is_number() {
+        manifest_version = manifest_object["Version"].as_i64().unwrap();
+    }
+    log::info!(
+        "Using enabledmods.json format version {}.",
+        manifest_version
+    );
+
+    // Fail without version parameter
+    if mod_version.is_empty() {
+        match manifest_version {
+            0 => (),
+            _ => {
+                // Trying to retrieve version
+                let mods_and_properties = get_installed_mods_and_properties(game_install.clone())?;
+                for m in mods_and_properties {
+                    if m.name == mod_name {
+                        mod_version = m.version.unwrap();
+                        break;
+                    }
+                }
+
+                // Fail if version couldn't be retrieved
+                if mod_version.is_empty() {
+                    log::error!("Didn't find mod version for mod \"{}\".", mod_name);
+                    return Err(
+                        "todo: Missing `mod_version` parameter with new enabledmods.json format."
+                            .to_string(),
+                    );
+                }
+            }
+        }
+    }
+
     // Update value
-    res[mod_name] = serde_json::Value::Bool(is_enabled);
+    match manifest_version {
+        0 => {
+            res[mod_name] = serde_json::Value::Bool(is_enabled);
+        }
+        _ => {
+            // Create mod entry if needed
+            if !res.as_object().unwrap().contains_key(&mod_name) || !res[&mod_name].is_object() {
+                let mut version_map: serde_json::Map<String, serde_json::Value> =
+                    serde_json::Map::new();
+                version_map.insert(mod_version, serde_json::Value::Bool(is_enabled));
+                res[&mod_name] = serde_json::Value::Object(version_map);
+            } else {
+                res[mod_name][mod_version] = serde_json::Value::Bool(is_enabled);
+            }
+        }
+    }
 
     // Save the JSON structure into the output file
     std::fs::write(
@@ -380,12 +478,35 @@ pub fn get_installed_mods_and_properties(
     let binding = serde_json::Map::new(); // Empty map in case treating as object fails
     let mapping = enabled_mods.as_object().unwrap_or(&binding);
 
+    // With the change introduced in https://github.com/R2Northstar/NorthstarLauncher/pull/828,
+    // enabledmods.json now has a different format, forcing us to detect whether it is used and
+    // react accordingly.
+    //
+    let old_format_used: bool = !mapping.is_empty() && !mapping.contains_key("Version")
+        || !mapping.is_empty()
+            && mapping.contains_key("Version")
+            && mapping.get("Version").unwrap() == 0;
+    log::info!("Old enabledmods.json format detected: {old_format_used}");
+
     // Use list of installed mods and set enabled based on `enabledmods.json`
     for mut current_mod in found_installed_mods {
-        let current_mod_enabled = match mapping.get(&current_mod.name) {
-            Some(enabled) => enabled.as_bool().unwrap(),
-            None => true, // Northstar considers mods not in mapping as enabled.
+        let current_mod_enabled: bool = match old_format_used {
+            // Old format: { modName: string => is_enabled: bool }
+            true => match mapping.get(&current_mod.name) {
+                Some(enabled) => enabled.as_bool().unwrap(),
+                None => true, // Northstar considers mods not in mapping as enabled.
+            },
+
+            // New format: { modName: string => versions: string[] => is_enabled: bool }
+            false => match mapping.get(&current_mod.name) {
+                Some(versions) => match versions.get(current_mod.version.clone().unwrap()) {
+                    Some(enabled) => enabled.as_bool().unwrap(),
+                    None => false,
+                },
+                None => false,
+            },
         };
+
         current_mod.enabled = current_mod_enabled;
         installed_mods.push(current_mod);
     }

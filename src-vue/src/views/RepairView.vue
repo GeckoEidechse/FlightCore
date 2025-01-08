@@ -117,7 +117,7 @@ export default defineComponent({
             await persistentStore.save();
         },
         async disableModsettingsMod() {
-            await invoke("set_mod_enabled_status", { gameInstall: this.$store.state.game_install, modName: "Mod Settings", isEnabled: false })
+            await invoke("set_mod_enabled_status", { gameInstall: this.$store.state.game_install, modName: "Mod Settings", modVersion: "", isEnabled: false })
                 .then((message) => {
                     showNotification(this.$t('generic.success'), this.$t('settings.repair.window.disable_modsettings_success'));
                 })
